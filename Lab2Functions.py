@@ -2,6 +2,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import scipy.signal as sps
+from scipy.signal import butter
 
 """Step 1: This function finds the peaks of the derivative of the ECG signal
 Input: ecg signal, time
