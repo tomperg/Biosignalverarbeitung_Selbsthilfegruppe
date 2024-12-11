@@ -55,11 +55,12 @@ def d_ecg_peaks(d_ecg, peaks_d_ecg, time, heightper, distanceper):
     
 
     
-    """Step 3: this function finds the Rwave peaks at the original ecg signal
+"""Step 3: this function finds the Rwave peaks at the original ecg signal
     with the before defined peaks of the d_ecg signal
     Input: ecg signal,derivative of ecg signal,
         Rwave peaks of d_ecg from height_distance_threshold_peaks
     Output: Rwave peaks"""
+
 def Rwave_peaks(ecg, d_ecg, Rwave_peaks_d_ecg, time):   
     Rwave = np.empty([len(Rwave_peaks_d_ecg)-1]) 
     for i in range(0, len(Rwave)): # for all peaks
