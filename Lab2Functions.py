@@ -84,7 +84,8 @@ def Rwave_peaks(ecg, d_ecg, Rwave_peaks_d_ecg, time):
     ax2.plot(time, ecg, color = 'b', label = 'ECG')
     ax2.plot(time[Rwave], ecg[Rwave], "x", color = 'g')
     ax2.set_ylabel('Activation []')
-    ax1.legend()
-    ax2.legend()
+    #setze die Legende an das Rechte obere Eck des Plots
+    ax1.legend(loc = 'upper left')
+    ax2.legend(loc = 'upper right')
     plt.show()
     return Rwave_t
