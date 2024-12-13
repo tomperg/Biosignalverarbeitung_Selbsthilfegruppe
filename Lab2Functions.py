@@ -1,91 +1,102 @@
-
 import matplotlib.pyplot as plt
 import numpy as np
 import scipy.signal as sps
 from scipy.signal import butter
 
-"""Step 1: This function finds the peaks of the derivative of the ECG signal
-Input: ecg signal, time
-Output: ecg derivative, position of peaks of d_ecg
+"""Schritt 1: Diese Funktion findet die Peaks der Ableitung des ECG-Signals
+Eingabe: ECG-Signal, Zeit
+Ausgabe: Ableitung des ECG, Position der Peaks der d_ecg
 """
 
+
 def decg_peaks(ecg, time):
-    """Step 1: Find the peaks of the derivative of the ECG signal"""
-    d_ecg = np.diff(ecg) #find derivative of ecg signal
-    peaks_d_ecg,_ = sps.find_peaks(d_ecg) #peaks of d_ecg
-     
-    # plot step 1
+    """Schritt 1: Finde die Peaks der Ableitung des ECG-Signals"""
+    d_ecg = np.diff(ecg)  # Finde die Ableitung des ECG-Signals
+    peaks_d_ecg, _ = sps.find_peaks(d_ecg)  # Peaks der d_ecg
+
+    # Schritt 1 plotten
     plt.figure()
-    plt.plot(time.iloc[0:len(time)-1], d_ecg, color = 'red')
-    plt.plot(time.iloc[peaks_d_ecg], d_ecg[peaks_d_ecg], "x", color = 'g')
-    plt.xlabel('Time [s]')
-    plt.ylabel('Derivative of activation []')
-    plt.title('R-wave peaks step 1: peaks of derivative of ECG')
+    plt.plot(time.iloc[0:len(time) - 1], d_ecg, color='red')
+    plt.plot(time.iloc[peaks_d_ecg], d_ecg[peaks_d_ecg], "x", color='g')
+    plt.xlabel('Zeit [s]')
+    plt.ylabel('Ableitung der Aktivierung []')
+    plt.title('R-Wellen Peaks Schritt 1: Peaks der Ableitung des EKG')
     plt.show()
+    #save img
+    plt.savefig('R-Wellen Peaks Schritt 1: Peaks der Ableitung des EKG.png')
     return d_ecg, peaks_d_ecg
-    
-"""Step 2: This function filters out all peaks that are under the height threshold
-    and not over a minimum distance from each other. \
-     Input: d_ecg signal, position of peaks from decg_peaks(), time, 
-         height threshold percentage in decimal, distance threshold in decimal
-     Output: Rwave peaks of d_ecg"""    
+
+
+"""Schritt 2: Diese Funktion filtert alle Peaks, die unter der Höhen-Schwelle liegen
+    und nicht mindestens einen Abstand zueinander haben. 
+    Eingabe: d_ecg-Signal, Position der Peaks aus decg_peaks(), Zeit,
+         Höhen-Schwellen-Prozentsatz als Dezimalzahl, Abstand-Schwellen-Prozentsatz als Dezimalzahl
+    Ausgabe: R-Wellen Peaks des d_ecg"""
+
+
 def d_ecg_peaks(d_ecg, peaks_d_ecg, time, heightper, distanceper):
-    meanpeaks_d_ecg = np.mean(d_ecg[peaks_d_ecg]) # find the mean of the peaks
-    max_d_ecg = np.max(d_ecg) #find max of the ecg signal
-    threshold = np.mean([meanpeaks_d_ecg,max_d_ecg])*heightper # find mean of meanpeakecg and maxecg - this will be a good threshold for finding peaks. it filters out all the peaks from the bottom
-    newpeaks_d_ecg,_ = sps.find_peaks(d_ecg, height = threshold) # find the new peaks
+    meanpeaks_d_ecg = np.mean(d_ecg[peaks_d_ecg])  # Finde den Mittelwert der Peaks
+    max_d_ecg = np.max(d_ecg)  # Finde den Maximalwert des ECG-Signals
+    threshold = np.mean([meanpeaks_d_ecg,
+                         max_d_ecg]) * heightper  # Finde den Mittelwert von meanpeaks_d_ecg und max_d_ecg - dies wird eine gute Schwelle für das Finden der Peaks sein. Filtert alle Peaks unten aus
+    newpeaks_d_ecg, _ = sps.find_peaks(d_ecg, height=threshold)  # Finde die neuen Peaks
     newpeaks_d_ecg_t = time[newpeaks_d_ecg]
-    newpeaks_d_ecg_t = newpeaks_d_ecg_t.reset_index(drop = True)
+    newpeaks_d_ecg_t = newpeaks_d_ecg_t.reset_index(drop=True)
     meandistance = np.mean(np.diff(newpeaks_d_ecg))
-    Rwave_peaks_d_ecg,_ = sps.find_peaks(d_ecg,height = threshold, distance = meandistance*distanceper) # 
-    
-      #plot step 2
-    plt.figure()  
-    plt.plot(time[0:len(time)-1], d_ecg, color = 'red') 
-    plt.plot(time[Rwave_peaks_d_ecg], d_ecg[Rwave_peaks_d_ecg], "x", color = 'g')
-    #plt.axhline(meanpeaks_d_ecg, color = 'b')
-    #plt.axhline(max_d_ecg, color = 'b')
-    thres = plt.axhline(threshold, color = 'black', label = 'threshold')
-    plt.title('R-wave peaks step 2: d_ECG peaks')
-    plt.ylabel('Derivative of activation []')
-    plt.xlabel('Time [s]')
+    Rwave_peaks_d_ecg, _ = sps.find_peaks(d_ecg, height=threshold, distance=meandistance * distanceper)  #
+
+    # Schritt 2 plotten
+    plt.figure()
+    plt.plot(time[0:len(time) - 1], d_ecg, color='red')
+    plt.plot(time[Rwave_peaks_d_ecg], d_ecg[Rwave_peaks_d_ecg], "x", color='g')
+    # plt.axhline(meanpeaks_d_ecg, color = 'b')
+    # plt.axhline(max_d_ecg, color = 'b')
+    thres = plt.axhline(threshold, color='black', label='Schwelle')
+    plt.title('R-Wellen Peaks Schritt 2: d_EKG Peaks')
+    plt.ylabel('Ableitung der Aktivierung []')
+    plt.xlabel('Zeit [s]')
     plt.legend()
+    plt.savefig('R-Wellen Peaks Schritt 2: d_EKG Peaks.png')
     plt.show()
+
     return Rwave_peaks_d_ecg
-    
 
-    
-"""Step 3: this function finds the Rwave peaks at the original ecg signal
-    with the before defined peaks of the d_ecg signal
-    Input: ecg signal,derivative of ecg signal,
-        Rwave peaks of d_ecg from height_distance_threshold_peaks
-    Output: Rwave peaks"""
 
-def Rwave_peaks(ecg, d_ecg, Rwave_peaks_d_ecg, time):   
-    Rwave = np.empty([len(Rwave_peaks_d_ecg)-1]) 
-    for i in range(0, len(Rwave)): # for all peaks
-        ecgrange = ecg[Rwave_peaks_d_ecg[i]:Rwave_peaks_d_ecg[i+1]] # create array that contains of the ecg within the d_ecg_peaks
-        percentage = np.round(len(ecgrange)*0.2)
-        maxvalue = np.array(list(np.where(ecgrange == np.max(ecgrange[0:int(percentage)])))) # find the index of the max value of ecg
-        Rwave[i] = Rwave_peaks_d_ecg[i] + maxvalue[0,0]  # save this index         
-    
+"""Schritt 3: Diese Funktion findet die R-Wellen Peaks im ursprünglichen EKG-Signal
+    mit den zuvor definierten Peaks des d_ecg-Signals
+    Eingabe: ECG-Signal, Ableitung des EKG-Signals,
+        R-Wellen Peaks des d_ecg aus height_distance_threshold_peaks
+    Ausgabe: R-Wellen Peaks"""
+
+
+def Rwave_peaks(ecg, d_ecg, Rwave_peaks_d_ecg, time):
+    Rwave = np.empty([len(Rwave_peaks_d_ecg) - 1])
+    for i in range(0, len(Rwave)):  # für alle Peaks
+        ecgrange = ecg[Rwave_peaks_d_ecg[i]:Rwave_peaks_d_ecg[
+            i + 1]]  # Erstelle ein Array, das das ECG innerhalb der d_ecg_Peaks enthält
+        percentage = np.round(len(ecgrange) * 0.2)
+        maxvalue = np.array(
+            list(np.where(ecgrange == np.max(ecgrange[0:int(percentage)]))))  # Finde den Index des Maximalwerts des ECG
+        Rwave[i] = Rwave_peaks_d_ecg[i] + maxvalue[0, 0]  # Speichere diesen Index
+
     Rwave = Rwave.astype(np.int64)
     Rwave_t = time[Rwave]
-    Rwave_t = Rwave_t.reset_index(drop = True)
-    Rwave_t = Rwave_t.drop(columns = ['index'])
-    
-    # plot step 3
+    Rwave_t = Rwave_t.reset_index(drop=True)
+    Rwave_t = Rwave_t.drop(columns=['index'])
+
+    # Schritt 3 plotten
     fig, ax1 = plt.subplots()
-    ax1.plot(time[0:len(time)-1], d_ecg, color = 'r', label = 'Derivative of ECG')
-    ax1.set_ylabel('Activation Derivative []')
-    plt.xlabel('Time [s]') 
-    plt.title('R-wave peaks step 3: R-wave peaks')
+    ax1.plot(time[0:len(time) - 1], d_ecg, color='r', label='Ableitung des EKG')
+    ax1.set_ylabel('Ableitung der Aktivierung []')
+    plt.xlabel('Zeit [s]')
+    plt.title('R-Wellen Peaks Schritt 3: R-Wellen Peaks')
     ax2 = ax1.twinx()
-    ax2.plot(time, ecg, color = 'b', label = 'ECG')
-    ax2.plot(time[Rwave], ecg[Rwave], "x", color = 'g')
-    ax2.set_ylabel('Activation []')
-    #setze die Legende an das Rechte obere Eck des Plots
-    ax1.legend(loc = 'upper left')
-    ax2.legend(loc = 'upper right')
+    ax2.plot(time, ecg, color='b', label='ECG')
+    ax2.plot(time[Rwave], ecg[Rwave], "x", color='g')
+    ax2.set_ylabel('Aktivierung []')
+    # Setze die Legende in die rechte obere Ecke des Plots
+    ax1.legend(loc='upper left')
+    ax2.legend(loc='upper right')
     plt.show()
+    plt.savefig('R-Wellen Peaks Schritt 3: R-Wellen Peaks.png')
     return Rwave_t
